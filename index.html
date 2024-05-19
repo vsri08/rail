@@ -203,7 +203,7 @@ rails server
 ```
 
 </xmp>
-
+<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
 <h2> rails - username regex n form </h2>
 <xmp>
 Certainly! Here's a step-by-step guide to create a very simple Rails application that validates and filters USN IDs according to the given criteria:
@@ -342,8 +342,399 @@ end
 With this configuration, when you navigate to `http://localhost:3000`, it will display the list of students as the home page.
 
 Now, your application's root URL is set to the students index page.
-
+<!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
 </xmp>
+
+<h1> Rails - Form validation using javascript n databse</h1>
+<xmp>
+Sure, let's create a simple Rails application that collects user input for username, phone number, and email address, validates the input using JavaScript within the same HTML page, and retrieves the data from the database.
+
+Here's how you can do it:
+
+1. **Create a Rails Application**: Open your terminal and run the following command to create a new Rails application:
+
+   ```bash
+   rails new SimpleApp
+   ```
+
+2. **Generate a Scaffold**: Navigate to your Rails application directory and generate a scaffold for the user model. Run the following command:
+
+   ```bash
+   rails generate scaffold User username:string phone_number:string email:string
+   ```
+
+   This command generates a model, controller, views, and migration file for the User model with attributes `username`, `phone_number`, and `email`.
+
+3. **Run Migrations**: Run the migration to create the necessary database table for the User model:
+
+   ```bash
+   rails db:migrate
+   ```
+
+4. **Update Form View**: Open the `_form.html.erb` file located at `app/views/users`, and include JavaScript for validation directly within the HTML:
+
+   ```erb
+   <!-- app/views/users/_form.html.erb -->
+   <%= form_with(model: user, local: true, id: "user-form", class: "validate-form") do |form| %>
+     <% if user.errors.any? %>
+       <div id="error_explanation">
+         <h2><%= pluralize(user.errors.count, "error") %> prohibited this user from being saved:</h2>
+
+         <ul>
+           <% user.errors.full_messages.each do |message| %>
+             <li><%= message %></li>
+           <% end %>
+         </ul>
+       </div>
+     <% end %>
+
+     <div class="field">
+       <%= form.label :username %>
+       <%= form.text_field :username, id: "username" %>
+     </div>
+
+     <div class="field">
+       <%= form.label :phone_number %>
+       <%= form.text_field :phone_number, id: "phone_number" %>
+     </div>
+
+     <div class="field">
+       <%= form.label :email %>
+       <%= form.email_field :email, id: "email" %>
+     </div>
+
+     <div class="actions">
+       <%= form.submit %>
+     </div>
+   <% end %>
+
+   <script>
+     document.addEventListener("DOMContentLoaded", function() {
+       document.querySelector(".validate-form").onsubmit = function() {
+         var username = document.getElementById("username").value;
+         var phoneNumber = document.getElementById("phone_number").value;
+         var email = document.getElementById("email").value;
+
+         if (username.trim() === "" || phoneNumber.trim() === "" || email.trim() === "") {
+           alert("All fields are required");
+           return false;
+         }
+
+         // Check phone number format (10 digits)
+         if (!phoneNumber.match(/^\d{10}$/)) {
+           alert("Please enter a valid 10-digit phone number");
+           return false;
+         }
+
+         // Check email format
+         if (!isValidEmail(email)) {
+           alert("Please enter a valid email address");
+           return false;
+         }
+
+         return true;
+       };
+
+       function isValidEmail(email) {
+         var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+         return emailRegex.test(email);
+       }
+     });
+   </script>
+   ```
+
+   In this code:
+   - JavaScript for form validation is directly embedded within the HTML template.
+   - The `validate-form` class is added to the form for event handling.
+   - The `submit` event listener is added to the form, which triggers form validation.
+   - The `isValidEmail()` function validates the email format.
+
+5. **Start the Rails Server**: Run the following command to start the Rails server:
+
+   ```bash
+   rails server
+   ```
+
+!!!!IF NOT WORK WITHOUT ROOT!!!!!!!!!!
+To integrate the form directly into the root page, you need to modify the `config/routes.rb` file to set the root route to the `users#new` action. Additionally, you'll need to update the `users/new.html.erb` view to include the form and JavaScript validation.
+
+Here's how you can do it:
+
+1. **Modify Routes**: Open the `config/routes.rb` file and set the root route to the `users#new` action:
+
+   ```ruby
+   # config/routes.rb
+   Rails.application.routes.draw do
+     root 'users#new'
+     resources :users
+   end
+   ```
+
+   This will make the new user form the root page of your application.
+
+2. **Update New User View**: Open the `app/views/users/new.html.erb` file and include the form and JavaScript validation:
+
+   ```erb
+   <!-- app/views/users/new.html.erb -->
+   <h1>New User</h1>
+   <%= form_with(model: @user, local: true, id: "user-form", class: "validate-form") do |form| %>
+     <% if @user.errors.any? %>
+       <div id="error_explanation">
+         <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
+
+         <ul>
+           <% @user.errors.full_messages.each do |message| %>
+             <li><%= message %></li>
+           <% end %>
+         </ul>
+       </div>
+     <% end %>
+
+     <div class="field">
+       <%= form.label :username %>
+       <%= form.text_field :username, id: "username" %>
+     </div>
+
+     <div class="field">
+       <%= form.label :phone_number %>
+       <%= form.text_field :phone_number, id: "phone_number" %>
+     </div>
+
+     <div class="field">
+       <%= form.label :email %>
+       <%= form.email_field :email, id: "email" %>
+     </div>
+
+     <div class="actions">
+       <%= form.submit %>
+     </div>
+   <% end %>
+
+   <script>
+     document.addEventListener("DOMContentLoaded", function() {
+       document.querySelector(".validate-form").onsubmit = function() {
+         var username = document.getElementById("username").value;
+         var phoneNumber = document.getElementById("phone_number").value;
+         var email = document.getElementById("email").value;
+
+         if (username.trim() === "" || phoneNumber.trim() === "" || email.trim() === "") {
+           alert("All fields are required");
+           return false;
+         }
+
+         // Check phone number format (10 digits)
+         if (!phoneNumber.match(/^\d{10}$/)) {
+           alert("Please enter a valid 10-digit phone number");
+           return false;
+         }
+
+         // Check email format
+         if (!isValidEmail(email)) {
+           alert("Please enter a valid email address");
+           return false;
+         }
+
+         return true;
+       };
+
+       function isValidEmail(email) {
+         var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+         return emailRegex.test(email);
+       }
+     });
+   </script>
+   ```
+
+   This will render the new user form directly on the root page of your application.
+
+3. **Start the Rails Server**: If it's not already running, start the Rails server:
+
+   ```bash
+   rails server
+   ```
+<!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+       
+</xmp>
+<h1> BASIC RAILS PATIENT + CSS </h1>
+<xmp>
+To create a simple Rails webpage to store and display details of patients with CSS styling, follow these steps:
+
+1. **Generate Rails Application**: Open your terminal and run the following command to create a new Rails application:
+
+   ```bash
+   rails new PatientDetailsApp
+   ```
+
+2. **Generate Patient Model**: Generate a scaffold for the patient model with attributes for age, room number, insurance company, and SSN:
+
+   ```bash
+   rails generate scaffold Patient age:integer room_number:string insurance_company:string ssn:string
+   ```
+
+3. **Run Migrations**: Run the migration to create the necessary database table for the Patient model:
+
+   ```bash
+   rails db:migrate
+   ```
+
+4. **Add CSS Styling**: You can add CSS styling by creating a CSS file in the `app/assets/stylesheets` directory. Let's create a file named `custom.css`:
+
+   ```css
+   /* app/assets/stylesheets/custom.css */
+   body {
+       font-family: Arial, sans-serif;
+       background-color: #f4f4f4;
+       margin: 0;
+       padding: 0;
+   }
+
+   .container {
+       max-width: 800px;
+       margin: 20px auto;
+       background-color: #fff;
+       padding: 20px;
+       border-radius: 8px;
+       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+   }
+
+   h1 {
+       text-align: center;
+       color: #333;
+   }
+
+   table {
+       width: 100%;
+       border-collapse: collapse;
+       margin-top: 20px;
+   }
+
+   th, td {
+       border: 1px solid #ddd;
+       padding: 8px;
+       text-align: left;
+   }
+
+   th {
+       background-color: #f2f2f2;
+   }
+
+   tr:nth-child(even) {
+       background-color: #f9f9f9;
+   }
+
+   tr:hover {
+       background-color: #f2f2f2;
+   }
+
+   form {
+       margin-top: 20px;
+   }
+
+   .actions {
+       text-align: center;
+   }
+
+   .btn {
+       background-color: #4caf50;
+       color: white;
+       padding: 10px 20px;
+       border: none;
+       border-radius: 4px;
+       cursor: pointer;
+   }
+
+   .btn:hover {
+       background-color: #45a049;
+   }
+   ```
+
+5. **Update Controller**: Open the `app/controllers/patients_controller.rb` file and make sure the `patients#index` action is defined as the root:
+
+   ```ruby
+   # app/controllers/patients_controller.rb
+   class PatientsController < ApplicationController
+     before_action :set_patient, only: %i[show edit update destroy]
+
+     # GET /patients
+     # GET /patients.json
+     def index
+       @patients = Patient.all
+     end
+
+     # Other actions...
+
+     private
+
+     # Use callbacks to share common setup or constraints between actions.
+     def set_patient
+       @patient = Patient.find(params[:id])
+     end
+
+     # Other private methods...
+   end
+   ```
+
+6. **Create Views**: Update the `app/views/patients/index.html.erb` file to display the list of patients with appropriate HTML markup:
+
+   ```erb
+   <!-- app/views/patients/index.html.erb -->
+   <h1>Patients</h1>
+
+   <table>
+     <thead>
+       <tr>
+         <th>Age</th>
+         <th>Room Number</th>
+         <th>Insurance Company</th>
+         <th>SSN</th>
+         <th colspan="3"></th>
+       </tr>
+     </thead>
+
+     <tbody>
+       <% @patients.each do |patient| %>
+         <tr>
+           <td><%= patient.age %></td>
+           <td><%= patient.room_number %></td>
+           <td><%= patient.insurance_company %></td>
+           <td><%= patient.ssn %></td>
+           <td><%= link_to 'Show', patient %></td>
+           <td><%= link_to 'Edit', edit_patient_path(patient) %></td>
+           <td><%= link_to 'Destroy', patient, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+         </tr>
+       <% end %>
+     </tbody>
+   </table>
+
+   <br>
+
+   <%= link_to 'New Patient', new_patient_path, class: 'btn' %>
+   ```
+
+7. **Start Rails Server**: Run the following command to start the Rails server:
+
+   ```bash
+   rails server
+   ```
+
+To make the patients index page the root of your Rails application, you need to update the routes file to set the root path to the patients index action. Here's how you can do it:
+
+1. Open the `config/routes.rb` file in your Rails application.
+
+2. Update the `root` route to point to the `patients#index` action:
+
+   ```ruby
+   # config/routes.rb
+   Rails.application.routes.draw do
+     root 'patients#index'
+     resources :patients
+   end
+   ```
+
+<!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+</xmp>
+
+<h1> </h1>
 </body>
 </html>
 
