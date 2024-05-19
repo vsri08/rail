@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body> <h1> Rails - Bus travel </h1> 
+<xmp>
+Creating a very simple Rails application for a bus ticket booking reservation system involves several steps. Here's a guide to help you get started:
+
+### Step 1: Setting Up the Rails Application
+
+
+2. **Create a new Rails application**:
+    ```sh
+    rails new BusReservation
+    cd BusReservation
+    ```
+
+3. **Generate the Reservation Scaffold**:
+    ```sh
+    rails generate scaffold Reservation name:string address:text contact_no:string no_of_passengers:integer passenger_name:string age:integer source_station:string destination_station:string
+    ```
+
+4. **Migrate the database**:
+    ```sh
+    rails db:migrate
+    ```
+
+### Step 2: Update the Reservation Model
+
+Open `app/models/reservation.rb` and add validations to ensure data integrity:
+
+```ruby
+class Reservation < ApplicationRecord
+  validates :name, :address, :contact_no, :no_of_passengers, :passenger_name, :age, :source_station, :destination_station, presence: true
+end
+```
+
+### Step 3: Update the Reservation Form
+
+Edit the form partial `app/views/reservations/_form.html.erb` to include dropdowns for source and destination stations:
+
+```erb
+<%= form_with(model: reservation, local: true) do |form| %>
+  <% if reservation.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(reservation.errors.count, "error") %> prohibited this reservation from being saved:</h2>
+
+      <ul>
+        <% reservation.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= form.label :address %>
+    <%= form.text_area :address %>
+  </div>
+
+  <div class="field">
+    <%= form.label :contact_no %>
+    <%= form.text_field :contact_no %>
+  </div>
+
+  <div class="field">
+    <%= form.label :no_of_passengers %>
+    <%= form.number_field :no_of_passengers %>
+  </div>
+
+  <div class="field">
+    <%= form.label :passenger_name %>
+    <%= form.text_field :passenger_name %>
+  </div>
+
+  <div class="field">
+    <%= form.label :age %>
+    <%= form.number_field :age %>
+  </div>
+
+  <div class="field">
+    <%= form.label :source_station %>
+    <%= form.select :source_station, options_for_select(['Station A', 'Station B', 'Station C']) %>
+  </div>
+
+  <div class="field">
+    <%= form.label :destination_station %>
+    <%= form.select :destination_station, options_for_select(['Station X', 'Station Y', 'Station Z']) %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
+```
+
+### Step 4: Implement Search and Filter
+
+Add a search form in the index view `app/views/reservations/index.html.erb`:
+
+```erb
+<h1>Reservations</h1>
+
+<%= form_with(url: reservations_path, method: :get, local: true) do %>
+  <div class="field">
+    <%= label_tag :search, "Search by Passenger Name" %>
+    <%= text_field_tag :search, params[:search] %>
+  </div>
+  
+  <div class="field">
+    <%= label_tag :filter, "Filter by Source Station" %>
+    <%= select_tag :filter, options_for_select(['Station A', 'Station B', 'Station C'], params[:filter]) %>
+  </div>
+
+  <div class="actions">
+    <%= submit_tag "Search" %>
+  </div>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Address</th>
+      <th>Contact no</th>
+      <th>No of passengers</th>
+      <th>Passenger name</th>
+      <th>Age</th>
+      <th>Source station</th>
+      <th>Destination station</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @reservations.each do |reservation| %>
+      <tr>
+        <td><%= reservation.name %></td>
+        <td><%= reservation.address %></td>
+        <td><%= reservation.contact_no %></td>
+        <td><%= reservation.no_of_passengers %></td>
+        <td><%= reservation.passenger_name %></td>
+        <td><%= reservation.age %></td>
+        <td><%= reservation.source_station %></td>
+        <td><%= reservation.destination_station %></td>
+        <td><%= link_to 'Show', reservation %></td>
+        <td><%= link_to 'Edit', edit_reservation_path(reservation) %></td>
+        <td><%= link_to 'Destroy', reservation, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to 'New Reservation', new_reservation_path %>
+```
+
+### Step 5: Update the Controller
+
+Modify the `index` action in `app/controllers/reservations_controller.rb` to handle search and filter functionality:
+
+```ruby
+def index
+  @reservations = Reservation.all
+
+  if params[:search].present?
+    @reservations = @reservations.where("passenger_name LIKE ?", "%#{params[:search]}%")
+  end
+
+  if params[:filter].present?
+    @reservations = @reservations.where(source_station: params[:filter])
+  end
+end
+```
+Got it! To set the root route to the reservations index, you need to update the `config/routes.rb` file. Here are the steps:
+
+1. **Open the routes file** `config/routes.rb`.
+
+2. **Set the root route** to the reservations index by adding the following line:
+
+```ruby
+Rails.application.routes.draw do
+  root 'reservations#index'
+  resources :reservations
+end
+```
+
+
+
+### Step 6: Run the Server
+
+Start the Rails server:
+
+```sh
+rails server
+```
+
+</xmp>
+</body>
+</html>
+
