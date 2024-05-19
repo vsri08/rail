@@ -203,6 +203,147 @@ rails server
 ```
 
 </xmp>
+
+<h2> rails - username regex n form </h2>
+<xmp>
+Certainly! Here's a step-by-step guide to create a very simple Rails application that validates and filters USN IDs according to the given criteria:
+
+### Step 1: Setting Up the Rails Application
+
+1. **Create a new Rails application**:
+    ```sh
+    rails new USNValidation
+    cd USNValidation
+    ```
+
+2. **Generate the Student Scaffold**:
+    ```sh
+    rails generate scaffold Student usn:string
+    ```
+
+3. **Migrate the database**:
+    ```sh
+    rails db:migrate
+    ```
+
+### Step 2: Update the Student Model
+
+Open `app/models/student.rb` and add validation rules for the USN format:
+
+```ruby
+class Student < ApplicationRecord
+  validates :usn, presence: true, format: { with: /\A[1-4][A-Z]{2}\d{2}[A-Z]{2}\d{3}\z/,
+                                             message: "format should be 1-4 followed by 2 uppercase letters, 2 digits, 2 uppercase letters, and 3 digits" }
+end
+```
+
+### Step 3: Update the Student Form
+
+Edit the form partial `app/views/students/_form.html.erb` to include the USN input field:
+
+```erb
+<%= form_with(model: student, local: true) do |form| %>
+  <% if student.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(student.errors.count, "error") %> prohibited this student from being saved:</h2>
+
+      <ul>
+        <% student.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :usn %>
+    <%= form.text_field :usn %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
+```
+
+### Step 4: Implement Search and Filter
+
+Add a search form in the index view `app/views/students/index.html.erb`:
+
+```erb
+<h1>Students</h1>
+
+<%= form_with(url: students_path, method: :get, local: true) do %>
+  <div class="field">
+    <%= label_tag :search, "Search by USN" %>
+    <%= text_field_tag :search, params[:search] %>
+  </div>
+
+  <div class="actions">
+    <%= submit_tag "Search" %>
+  </div>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>USN</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @students.each do |student| %>
+      <tr>
+        <td><%= student.usn %></td>
+        <td><%= link_to 'Show', student %></td>
+        <td><%= link_to 'Edit', edit_student_path(student) %></td>
+        <td><%= link_to 'Destroy', student, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to 'New Student', new_student_path %>
+```
+
+### Step 5: Update the Controller
+
+Modify the `index` action in `app/controllers/students_controller.rb` to handle search functionality:
+
+```ruby
+def index
+  @students = Student.all
+
+  if params[:search].present?
+    @students = @students.where("usn LIKE ?", "%#{params[:search]}%")
+  end
+end
+```
+
+### Step 6: Run the Server
+
+Start the Rails server:
+
+```sh
+rails server
+```
+To set the root route to the students index page, follow these steps:
+
+1. Open the `config/routes.rb` file.
+
+```ruby
+Rails.application.routes.draw do
+  root 'students#index'
+  resources :students
+end
+```
+
+With this configuration, when you navigate to `http://localhost:3000`, it will display the list of students as the home page.
+
+Now, your application's root URL is set to the students index page.
+
+</xmp>
 </body>
 </html>
 
